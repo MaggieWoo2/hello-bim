@@ -8,3 +8,6 @@
 #### Functions:
 - Chat agent persona
 - Chat agent style (creativity, chat types)
+
+
+![Example outlook](interface.jpg)
