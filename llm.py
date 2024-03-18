@@ -4,6 +4,12 @@ import json
 
 from dotenv import load_dotenv
 from openai import OpenAI
+from langchain.chains import LLMChain
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import PromptTemplate
+from langchain_openai import OpenAI
+# from langchain_openai.chat_models import ChatOpenAI
+from langchain_community.llms import Ollama
 load_dotenv()
 
 
@@ -19,7 +25,7 @@ def get_system_message(persona, tone):
     return system_message
 
 def get_response(user_message, llm, persona, tone, temperature):
-    
+    """Basic QA with LLMs"""
     if llm == "openai":
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -60,3 +66,27 @@ def get_response(user_message, llm, persona, tone, temperature):
             actual_response = "Sorry, try another time~"
             
         return actual_response
+
+
+
+def get_response_with_history(user_message, llm, persona, tone, temperature, memory):
+    """QA with local LLMs, adding conversation histiry"""
+      
+    template = """You are a chatbot having a conversation with a human.
+
+        {chat_history}
+        Human: {human_input}
+        Chatbot:"""
+
+    prompt = PromptTemplate(
+        input_variables=["chat_history", "human_input"], template=template
+    )
+
+    llm = OpenAI()
+    llm_chain = LLMChain(
+        llm=llm,
+        prompt=prompt,
+        verbose=True,
+        memory=memory,
+    )
+    return llm_chain.predict(human_input=user_message)

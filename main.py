@@ -2,7 +2,7 @@ import os
 
 import streamlit as st
 
-from llm import get_response
+from llm import *
 
 def main():
     # App title
@@ -28,21 +28,19 @@ def main():
             st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
         st.button('Clear Chat History', on_click=clear_chat_history)
 
-    # Initialize chat messages if not already present
+    # Initialize session_state to keep track of messages
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+    if "memory" not in st.session_state.keys():
+        st.session_state.memory = ConversationBufferMemory(memory_key="chat_history")
         
-    # User input
     prompt = st.chat_input("Your message:")
 
-    # Process user input
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
-        # Generating a response using the get_response function from llm.py
-        response = get_response(prompt, llm="llama2", persona=persona, tone=response_tone, temperature=temperature)
-        # Displaying the assistant's response
+
+        response = get_response_with_history(prompt, llm="llama2", persona=persona, tone=response_tone, temperature=temperature, memory=st.session_state.memory)
         st.session_state.messages.append({"role": "assistant", "content": response})
-        # st.text_area("Bim:", value=response, height=150, max_chars=None, key=None)
     
     # Display chat messages
     for message in st.session_state.messages:
